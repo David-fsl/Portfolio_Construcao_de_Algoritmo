@@ -16,7 +16,10 @@ menu = st.sidebar.radio(
         "Arquivos em Disco", 
         "Recursividade", 
         "Complexidade de Tempo de Algoritmo (Big O)", 
-        "Uso de API's Externas"
+        "Uso de API's Externas",
+        "Consulta CEP",
+        "Cotação Dólar",
+        "Monitoramento de ônibus"
     )
 )
 
@@ -43,6 +46,34 @@ elif menu == "Complexidade de Tempo de Algoritmo (Big O)":
 
 elif menu == "Uso de API's Externas":
     st.subheader("Uso de API's Externas")
+    st.write("Clique aqui para gerar um fato aleatório utilizando a API pública 'Useless Facts'")
+    
+    url = "https://uselessfacts.jsph.pl/api/v2/facts/random"
+    
+    if st.button("Gerar fato aleatório"):
+        response = requests.get(url)
+
+        if(response.status_code == 200):
+            dados = response.json()
+            fato = dados['text']
+            st.write(fato)
+        
+        else:
+            st.write("Erro ao fazer a requisição para a API")
+    
+    
+    
+elif menu == "Consulta CEP":
+    st.subheader("Consulta CEP")
+
+elif menu == "Cotação Dólar":
+    st.subheader("Cotação Dólar")
+
+elif menu == "Cotação Dólar":
+    st.subheader("Cotação Dólar")
+ 
+elif menu == "Monitoramento de ônibus":
+    st.subheader("Monitoramento de ônibus")
 
 else:
     st.subheader("Tópico não encontrado")
