@@ -569,11 +569,10 @@ elif menu == "Cotação Dólar":
     import requests
 
     st.write("Confira abaixo a cotação atual do dólar.")
-
-      url = f"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@ini,dataFinalCotacao=@fim)?@ini='01-01-2000'&@fim='12-31-2100'&$top=1&$orderby=dataHoraCotacao%20desc&$format=json"
-      res = requests.get(url)
-      res = res.json()
-      valor = res['value'][0]['cotacaoVenda']
+    url = f"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@ini,dataFinalCotacao=@fim)?@ini='01-01-2000'&@fim='12-31-2100'&$top=1&$orderby=dataHoraCotacao%20desc&$format=json"
+    res = requests.get(url)
+    res = res.json()
+    valor = res['value'][0]['cotacaoVenda']
     st.metric(label="💵 1 USD em BRL", value=f"R$ {valor:.4f}")
 #__________________________________________________________________________________________________________________________________
 
