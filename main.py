@@ -20,9 +20,9 @@ menu = st.sidebar.radio(
         "Arquivos em Disco", 
         "Recursividade", 
         "API Externa",
+        "Big O",
         "Consulta CEP",
         "Cotação Dólar",
-        "Monitoramento de ônibus"
         
     )
 )
@@ -30,7 +30,7 @@ menu = st.sidebar.radio(
 if menu == "Decisão e Repetição":
     st.subheader("Decisão e Repetição:")
 
-    # Exemplo 1: Verificar se um número é par ou ímpar
+    # Verificar se um número é par ou ímpar
     numero = st.number_input("Digite um número inteiro para verificar se é inpar ou par:", step=1, format="%d")
     if st.button("Verificar"):
         if numero % 2 == 0:
@@ -40,7 +40,7 @@ if menu == "Decisão e Repetição":
     
     st.markdown("---")
 
-    # Exemplo 2: Tabuada de multiplicação
+    # Tabuada de multiplicação
     st.write("Tabuada de Multiplicação:")
     tabuada_numero = st.number_input("Digite um número inteiro para ver sua tabuada:", step=1, format="%d", value=5)
     if st.button("Gerar Tabuada"):
@@ -278,13 +278,193 @@ elif menu == "Registros":
             - Demonstra manipulação básica de estruturas de dados (registros) em Python.
             """
         )       
-
+#_____________________________________________________________________________________________________________
 
 elif menu == "Arquivos em Disco":
-    st.subheader("Arquivos em Disco:")
+    st.subheader("Arquivos em Disco")
+
+    import os
+    import pandas as pd
+
+    exemplo = st.radio(
+        "Escolha o exemplo:",
+        ["Texto (.txt)", "CSV"],
+        horizontal=True,
+        key="arq_exemplo"
+    )
+
+    # ===================== TEXTO (.txt) =====================
+    if exemplo == "Texto (.txt)":
+        st.markdown("**Salvar e ler um arquivo .txt**")
+
+        # pasta padrão onde salvaremos os arquivos
+        pasta_padrao = "data"
+        os.makedirs(pasta_padrao, exist_ok=True)
+
+        nome = st.text_input("Nome do arquivo (sem extensão):", value="meu_texto", key="arq_txt_nome")
+        conteudo = st.text_area("Conteúdo do arquivo:", "Olá, mundo!", height=120, key="arq_txt_conteudo")
+        pasta = st.text_input("Pasta (relativa ao projeto):", value=pasta_padrao, key="arq_txt_pasta")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Salvar .txt", key="arq_btn_salvar_txt"):
+                caminho = os.path.join(pasta, f"{nome}.txt")
+                os.makedirs(os.path.dirname(caminho), exist_ok=True)
+                try:
+                    with open(caminho, "w", encoding="utf-8") as f:
+                        f.write(conteudo)
+                    st.success(f"Arquivo salvo em `{caminho}`")
+                except Exception as e:
+                    st.error(f"Erro ao salvar: {e}")
+
+        with col2:
+            if st.button("Ler .txt", key="arq_btn_ler_txt"):
+                caminho = os.path.join(pasta, f"{nome}.txt")
+                if os.path.exists(caminho):
+                    try:
+                        with open(caminho, "r", encoding="utf-8") as f:
+                            lido = f.read()
+                        st.markdown("**Conteúdo lido:**")
+                        st.code(lido, language="text")
+                    except Exception as e:
+                        st.error(f"Erro ao ler: {e}")
+                else:
+                    st.warning(f"Arquivo não encontrado em `{caminho}`")
+
+        with st.expander("Como funciona (.txt)"):
+            st.markdown(
+                """
+- **Salvar**: `open(caminho, "w", encoding="utf-8").write(conteudo)` cria/substitui o arquivo.
+- **Ler**: `open(caminho, "r", encoding="utf-8").read()` retorna o texto.
+- `os.path.join` monta caminhos portáveis; `os.makedirs(..., exist_ok=True)` garante a pasta.
+                """
+            )
+
+    # ===================== CSV =====================
+    elif exemplo == "CSV":
+        st.markdown("**Ler (upload) e salvar CSV no disco**")
+        os.makedirs("data", exist_ok=True)
+
+        # ---- Upload e leitura do CSV ----
+        up = st.file_uploader("Envie um arquivo CSV", type=["csv"], key="arq_csv_up")
+        if up is not None:
+            try:
+                df = pd.read_csv(up)
+                st.success("CSV lido com sucesso!")
+                st.dataframe(df, use_container_width=True)
+
+                if st.button("Salvar CSV enviado no disco", key="arq_btn_salvar_up"):
+                    caminho_up = os.path.join("data", "upload.csv")
+                    df.to_csv(caminho_up, index=False, encoding="utf-8")
+                    st.info(f"Arquivo salvo em `{caminho_up}`")
+            except Exception as e:
+                st.error(f"Erro ao ler CSV: {e}")
+
+        st.markdown("---")
+
+        # ---- Gerar um CSV de exemplo ----
+        st.markdown("**Gerar um CSV de exemplo**")
+        df_ex = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Salvar exemplo em disco", key="arq_btn_salvar_exemplo"):
+                caminho_ex = os.path.join("data", "exemplo.csv")
+                try:
+                    df_ex.to_csv(caminho_ex, index=False, encoding="utf-8")
+                    st.success(f"Exemplo salvo em `{caminho_ex}`")
+                except Exception as e:
+                    st.error(f"Erro ao salvar CSV: {e}")
+
+        with col2:
+            st.download_button(
+                "Baixar exemplo.csv",
+                df_ex.to_csv(index=False).encode("utf-8"),
+                file_name="exemplo.csv",
+                mime="text/csv",
+                key="arq_btn_download_exemplo"
+            )
+
+        with st.expander("Como funciona (CSV)"):
+            st.markdown(
+                """
+- **Ler** CSV: `pd.read_csv(uploaded_file)` já entende o arquivo enviado pelo `st.file_uploader`.
+- **Salvar** CSV: `df.to_csv("data/arquivo.csv", index=False, encoding="utf-8")`.
+- **Download** sem salvar: `st.download_button(..., df.to_csv(...).encode("utf-8"))`.
+                """
+            )
+#__________________________________________________________________________________________________________________________________
+
 
 elif menu == "Recursividade":
-    st.subheader("Recursividade:")
+    st.subheader("Recursividade")
+
+    exemplo = st.radio(
+        "Escolha o exemplo:",
+        ["Fatorial (n!)", "Fibonacci"],
+        horizontal=True,
+        key="rec_exemplo"
+    )
+
+    # --------------------- 1) Fatorial (n!) ---------------------
+    if exemplo == "Fatorial (n!)":
+        n = st.number_input("n (0 a 20)", min_value=0, max_value=20, value=5, step=1, format="%d", key="rec_fat_n")
+        trace = st.checkbox("Mostrar rastro das chamadas (fat(k))", key="rec_fat_trace")
+
+        if st.button("Calcular fatorial", key="rec_fat_btn"):
+            chamadas = []
+
+            def fat(k: int) -> int:
+                if trace:
+                    chamadas.append(f"fat({k})")
+                if k == 0 or k == 1:          # CASO BASE
+                    return 1
+                return k * fat(k - 1)         # PASSO RECURSIVO
+
+            resultado = fat(n)
+            st.success(f"{n}! = {resultado}")
+            if trace:
+                st.code(" → ".join(chamadas), language="text")
+
+            st.caption("Complexidade: tempo Θ(n) e espaço de pilha Θ(n).")
+
+    # --------------------- 2) Fibonacci ---------------------
+    elif exemplo == "Fibonacci":
+        n = st.number_input("n (0 a 35 para recursivo puro)", min_value=0, max_value=50, value=10, step=1, format="%d", key="rec_fib_n")
+        metodo = st.radio("Método", ["Recursivo puro", "Com memoization (rápido)"], horizontal=True, key="rec_fib_m")
+
+        if st.button("Calcular Fibonacci", key="rec_fib_btn"):
+            if metodo == "Recursivo puro":
+                def fib(k: int) -> int:
+                    if k <= 1:               # CASO BASES
+                        return k
+                    return fib(k - 1) + fib(k - 2)   # SUBPROBLEMAS
+                res = fib(n)
+                st.success(f"F({n}) = {res}")
+                st.caption("Complexidade: tempo Θ(φ^n) (exponencial) e espaço Θ(n). Use para n pequeno.")
+            else:
+                from functools import lru_cache
+
+                @lru_cache(maxsize=None)
+                def fib(k: int) -> int:
+                    if k <= 1:
+                        return k
+                    return fib(k - 1) + fib(k - 2)
+
+                res = fib(n)
+                st.success(f"F({n}) = {res}")
+                st.caption("Complexidade: tempo Θ(n) e espaço Θ(n) (cache + pilha).")
+    with st.expander("📑 - Nota sobre o exemplo de Recursividade:"):
+        st.write(
+            """
+            - O exemplo do fatorial demonstra uma função recursiva simples com um caso base e um passo recursivo.
+            - O exemplo de Fibonacci mostra tanto a implementação recursiva pura (ineficiente) quanto a otimizada com memoization usando `lru_cache`.
+            - Ambos os exemplos ilustram conceitos fundamentais de recursividade em programação.
+            """
+        )
+
+
+#__________________________________________________________________________________________________________________________________
 
 elif menu == "API Externa":
     st.subheader("API Externa:")
@@ -312,17 +492,99 @@ elif menu == "API Externa":
         )           
 #__________________________________________________________________________________________________________________________________
 
+elif menu == "Big O":
+    st.subheader("Big O:")
+
+    st.write("Visualize diferentes complexidades de tempo de algoritmos com base no tamanho da entrada.")
+
+    import numpy as np
+    import pandas as pd
+
+    # Tamanhos de entrada
+    n = np.linspace(1, 100, 100)
+
+    # Funções de complexidade
+    complexidades = {
+        "O(1)": np.ones_like(n),
+        "O(log n)": np.log(n),
+        "O(n)": n,
+        "O(n log n)": n * np.log(n),
+        "O(n²)": n**2,
+        "O(2ⁿ)": 2**(n / 10),  # reduzido para visualização
+    }
+
+    # Seleção de complexidades
+    selecionadas = st.multiselect(
+        "Escolha as complexidades para visualizar:",
+        list(complexidades.keys()),
+        default=["O(1)", "O(n)", "O(n²)"]
+    )
+
+    # Criar DataFrame para o gráfico
+    df = pd.DataFrame({nome: complexidades[nome] for nome in selecionadas})
+    df.index = n
+    df.index.name = "Tamanho da entrada (n)"
+
+    # Exibir gráfico
+    st.line_chart(df)
+    with st.expander("📑 - Nota sobre o exemplo de Big O:"):
+        st.write(
+            """
+            - O exemplo visualiza diferentes classes de complexidade de tempo usando gráficos.
+            - Permite aos usuários selecionar quais complexidades desejam comparar.
+            - Ajuda a entender como o tempo de execução cresce com o aumento do tamanho da entrada.
+            """
+        )
+#__________________________________________________________________________________________________________________________________
+
 elif menu == "Consulta CEP":
-    st.subheader("Consulta CEP")
+    st.subheader("Consulta de CEP")
+
+    cep = st.text_input("Digite o CEP (somente números):")
+
+    if cep:
+        if len(cep) == 8 and cep.isdigit():
+            url = f"https://viacep.com.br/ws/{cep}/json/"
+            response = requests.get(url)
+
+            if response.status_code == 200:
+                data = response.json()
+                if "erro" not in data:
+                    st.success("CEP encontrado!")
+                    st.write(f"📍 **Endereço:** {data['logradouro']}")
+                    st.write(f"🏙️ **Bairro:** {data['bairro']}")
+                    st.write(f"🌆 **Cidade:** {data['localidade']}")
+                    st.write(f"🧭 **Estado:** {data['uf']}")
+                else:
+                    st.error("CEP não encontrado.")
+            else:
+                st.error("Erro ao consultar o CEP.")
+        else:
+            st.warning("Digite um CEP válido com 8 dígitos.")
+#__________________________________________________________________________________________________________________________________
 
 elif menu == "Cotação Dólar":
-    st.subheader("Cotação Dólar")
+    st.subheader("Cotação do Dólar Comercial")
 
-elif menu == "Cotação Dólar":
-    st.subheader("Cotação Dólar")
- 
-elif menu == "Monitoramento de ônibus":
-    st.subheader("Monitoramento de ônibus")
+    import requests
+
+    st.write("Confira abaixo a cotação atual do dólar comercial em relação ao real brasileiro.")
+
+    try:
+        # Consulta à API pública Via MSN Finance (dados em tempo real)
+        url = "https://query1.finance.yahoo.com/v8/finance/chart/USDBRL=X"
+        response = requests.get(url)
+        data = response.json()
+
+        # Extração do último valor
+        preco = data["chart"]["result"][0]["meta"]["regularMarketPrice"]
+
+        st.metric(label="💵 1 USD em BRL", value=f"R$ {preco:.4f}")
+        st.caption("Fonte: Yahoo Finance (USDBRL=X)")
+    except Exception as e:
+        st.error("Não foi possível obter a cotação do dólar.")
+        st.exception(e)
+#__________________________________________________________________________________________________________________________________
 
 else:
     st.subheader("Tópico não encontrado")
