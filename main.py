@@ -568,22 +568,13 @@ elif menu == "Cotação Dólar":
 
     import requests
 
-    st.write("Confira abaixo a cotação atual do dólar comercial em relação ao real brasileiro.")
+    st.write("Confira abaixo a cotação atual do dólar.")
 
-    try:
-        # Consulta à API pública Via MSN Finance (dados em tempo real)
-        url = "https://query1.finance.yahoo.com/v8/finance/chart/USDBRL=X"
-        response = requests.get(url)
-        data = response.json()
-
-        # Extração do último valor
-        preco = data["chart"]["result"][0]["meta"]["regularMarketPrice"]
-
-        st.metric(label="💵 1 USD em BRL", value=f"R$ {preco:.4f}")
-        st.caption("Fonte: Yahoo Finance (USDBRL=X)")
-    except Exception as e:
-        st.error("Não foi possível obter a cotação do dólar.")
-        st.exception(e)
+      url = f"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@ini,dataFinalCotacao=@fim)?@ini='01-01-2000'&@fim='12-31-2100'&$top=1&$orderby=dataHoraCotacao%20desc&$format=json"
+      res = requests.get(url)
+      res = res.json()
+      valor = res['value'][0]['cotacaoVenda']
+    st.metric(label="💵 1 USD em BRL", value=f"R$ {valor:.4f}")
 #__________________________________________________________________________________________________________________________________
 
 else:
